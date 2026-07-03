@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Night Patrolling Robot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #050a0f;
+      --surface:  #0b1520;
+      --border:   #0e2236;
+      --cyan:     #00e5ff;
+      --cyan-dim: #00708a;
+      --red:      #ff3b3b;
+      --text:     #c8dce8;
+      --muted:    #4a6a80;
+      --white:    #eaf4ff;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2.5rem;
+      background: rgba(5,10,15,0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.8rem; font-weight: 700;
+      color: var(--cyan); letter-spacing: 0.15em;
+    }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.75rem; font-weight: 500; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--cyan); }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: grid; place-items: center;
+      padding: 6rem 2rem 4rem;
+      position: relative; overflow: hidden;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem; align-items: center;
+      max-width: 1100px; width: 100%;
+    }
+    .hero-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.72rem; color: var(--cyan);
+      letter-spacing: 0.25em; text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900; line-height: 1.1;
+      color: var(--white);
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    h1 span { color: var(--cyan); display: block; }
+    .hero-desc {
+      font-size: 0.95rem; color: var(--text);
+      max-width: 440px; margin-bottom: 2.5rem;
+    }
+    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.7rem 1.4rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.78rem; letter-spacing: 0.08em;
+      text-decoration: none; border-radius: 3px;
+      transition: all 0.2s; cursor: pointer; border: none;
+    }
+    .btn-primary {
+      background: var(--cyan); color: var(--bg); font-weight: 700;
+    }
+    .btn-primary:hover { background: #33ecff; transform: translateY(-1px); }
+    .btn-ghost {
+      background: transparent; color: var(--cyan);
+      border: 1px solid var(--cyan-dim);
+    }
+    .btn-ghost:hover { border-color: var(--cyan); background: rgba(0,229,255,0.05); }
+
+    /* ── RADAR ── */
+    .radar-wrap {
+      display: flex; justify-content: center; align-items: center;
+      position: relative;
+    }
+    .radar-svg { width: 320px; height: 320px; }
+
+    /* ── ALERT TICKER ── */
+    .ticker {
+      position: absolute; bottom: 1.5rem; left: 0; right: 0;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; color: var(--cyan-dim);
+      letter-spacing: 0.15em;
+      overflow: hidden; white-space: nowrap;
+    }
+    .ticker-inner { display: inline-block; animation: ticker 22s linear infinite; }
+    @keyframes ticker {
+      0% { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      display: flex; gap: 2rem; flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+    .stat {
+      font-family: 'Share Tech Mono', monospace;
+    }
+    .stat-val { font-size: 1.5rem; color: var(--cyan); display: block; }
+    .stat-lbl { font-size: 0.65rem; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase; }
+
+    /* ── SECTIONS ── */
+    section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.68rem; color: var(--cyan); letter-spacing: 0.3em;
+      text-transform: uppercase; margin-bottom: 0.5rem;
+    }
+    h2 {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+      font-weight: 700; color: var(--white);
+      text-transform: uppercase; margin-bottom: 1rem;
+    }
+    .divider {
+      border: none; border-top: 1px solid var(--border);
+      margin: 0;
+    }
+
+    /* ── COMPONENTS GRID ── */
+    .components-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 2.5rem;
+    }
+    .comp-card {
+      background: var(--surface);
+      padding: 1.5rem;
+      transition: background 0.2s;
+    }
+    .comp-card:hover { background: #0d1e2e; }
+    .comp-icon { font-size: 1.5rem; margin-bottom: 0.8rem; }
+    .comp-name {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem; color: var(--cyan);
+      letter-spacing: 0.1em; margin-bottom: 0.3rem;
+    }
+    .comp-desc { font-size: 0.78rem; color: var(--muted); }
+
+    /* ── HOW IT WORKS ── */
+    .flow {
+      display: flex; gap: 0; flex-wrap: wrap;
+      margin-top: 2.5rem; position: relative;
+    }
+    .flow-step {
+      flex: 1; min-width: 160px;
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+      border-right: none;
+      position: relative;
+      background: var(--surface);
+    }
+    .flow-step:last-child { border-right: 1px solid var(--border); }
+    .flow-num {
+      font-family: 'Orbitron', monospace;
+      font-size: 2rem; font-weight: 900;
+      color: var(--border);
+      margin-bottom: 0.5rem; line-height: 1;
+    }
+    .flow-title {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.72rem; color: var(--cyan);
+      letter-spacing: 0.1em; margin-bottom: 0.4rem;
+    }
+    .flow-desc { font-size: 0.78rem; color: var(--muted); }
+
+    /* ── CODE VIEWER ── */
+    .code-box {
+      background: #020810;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 2.5rem;
+    }
+    .code-header {
+      background: var(--surface);
+      padding: 0.6rem 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: var(--red); }
+    .dot-y { background: #f5a623; }
+    .dot-g { background: #27c93f; }
+    .code-filename {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.72rem; color: var(--muted);
+      margin-left: auto;
+    }
+    pre {
+      padding: 1.5rem;
+      overflow-x: auto;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      line-height: 1.7;
+      color: #7ec8e3;
+      max-height: 420px;
+    }
+    .kw { color: #ff7c7c; }
+    .fn { color: #00e5ff; }
+    .cm { color: #3d5a6e; }
+    .st { color: #a8e6a3; }
+    .nm { color: #ffc97a; }
+
+    /* ── GITHUB DEPLOY ── */
+    .deploy-steps {
+      display: flex; flex-direction: column; gap: 1rem;
+      margin-top: 2.5rem;
+    }
+    .deploy-step {
+      display: flex; gap: 1.2rem; align-items: flex-start;
+      padding: 1.2rem 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      transition: border-color 0.2s;
+    }
+    .deploy-step:hover { border-color: var(--cyan-dim); }
+    .step-num {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.9rem; font-weight: 700;
+      color: var(--cyan); min-width: 28px;
+    }
+    .step-content { flex: 1; }
+    .step-title {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.78rem; color: var(--white);
+      margin-bottom: 0.3rem; letter-spacing: 0.05em;
+    }
+    .step-cmd {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.72rem; color: var(--cyan);
+      background: rgba(0,229,255,0.05);
+      padding: 0.4rem 0.8rem;
+      border-left: 2px solid var(--cyan);
+      margin-top: 0.4rem; border-radius: 0 2px 2px 0;
+      display: block; user-select: all;
+    }
+    .step-note { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--muted); letter-spacing: 0.1em;
+    }
+    footer span { color: var(--cyan); }
+
+    /* ── ALERT BLINK ── */
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .alert-dot {
+      display: inline-block;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--red);
+      animation: blink 1.2s ease-in-out infinite;
+      margin-right: 0.4rem;
+    }
+
+    @media (max-width: 700px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .radar-svg { width: 220px; height: 220px; }
+      .flow-step { border-right: 1px solid var(--border); border-bottom: none; }
+      .flow-step:last-child { border-bottom: 1px solid var(--border); }
+      nav { padding: 1rem 1.2rem; }
+      .nav-links { gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">NPR-01</div>
+  <ul class="nav-links">
+    <li><a href="#components">Hardware</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#code">Code</a></li>
+
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div id="hero">
+  <div class="hero-grid">
+    <div>
+      <div class="hero-label">Academic Project · Sept 2025</div>
+      <h1>Night<span>Patrolling Robot</span></h1>
+      <p class="hero-desc">
+        An autonomous mobile robotic vehicle engineered for surveillance and night security operations.
+        Real-time motion detection, IR night vision, obstacle-avoidance navigation, and instant GSM alerts.
+      </p>
+      <div class="hero-btns">
+        <a class="btn btn-primary" href="https://github.com/YOUR-USERNAME/night-patrol-robot" target="_blank">
+          ⬡ View on GitHub
+        </a>
+        <a class="btn btn-ghost" href="#code">⟨/⟩ See Code</a>
+      </div>
+      <div class="status-bar">
+        <div class="stat">
+          <span class="stat-val">360°</span>
+          <span class="stat-lbl">patrol range</span>
+        </div>
+        <div class="stat">
+          <span class="stat-val">&lt;1s</span>
+          <span class="stat-lbl">SMS latency</span>
+        </div>
+        <div class="stat">
+          <span class="stat-val">IR</span>
+          <span class="stat-lbl">night vision</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Radar SVG -->
+    <div class="radar-wrap">
+      <svg class="radar-svg" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="bg-grad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#0b1520"/>
+            <stop offset="100%" stop-color="#050a0f"/>
+          </radialGradient>
+          <radialGradient id="sweep-grad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/>
+          </radialGradient>
+          <clipPath id="radar-clip">
+            <circle cx="160" cy="160" r="140"/>
+          </clipPath>
+        </defs>
+
+        <!-- Background -->
+        <circle cx="160" cy="160" r="140" fill="url(#bg-grad)" stroke="#0e2236" stroke-width="1"/>
+
+        <!-- Grid rings -->
+        <circle cx="160" cy="160" r="35"  fill="none" stroke="#0e2236" stroke-width="1"/>
+        <circle cx="160" cy="160" r="70"  fill="none" stroke="#0e2236" stroke-width="1"/>
+        <circle cx="160" cy="160" r="105" fill="none" stroke="#0e2236" stroke-width="1"/>
+        <circle cx="160" cy="160" r="140" fill="none" stroke="#0e2236" stroke-width="1"/>
+
+        <!-- Cross lines -->
+        <line x1="160" y1="20" x2="160" y2="300" stroke="#0e2236" stroke-width="1"/>
+        <line x1="20"  y1="160" x2="300" y2="160" stroke="#0e2236" stroke-width="1"/>
+        <line x1="61"  y1="61"  x2="259" y2="259" stroke="#0e2236" stroke-width="0.5"/>
+        <line x1="259" y1="61"  x2="61"  y2="259" stroke="#0e2236" stroke-width="0.5"/>
+
+        <!-- Sweep group -->
+        <g clip-path="url(#radar-clip)">
+          <g id="sweep">
+            <!-- Sweep cone -->
+            <path d="M160 160 L160 20 A140 140 0 0 1 295 227 Z" fill="url(#sweep-grad)" opacity="0.7"/>
+            <!-- Sweep leading edge -->
+            <line x1="160" y1="160" x2="160" y2="20" stroke="#00e5ff" stroke-width="1.5" opacity="0.9"/>
+            <animateTransform attributeName="transform" type="rotate"
+              from="0 160 160" to="360 160 160" dur="4s" repeatCount="indefinite"/>
+          </g>
+
+          <!-- Blips (detected objects) -->
+          <circle cx="210" cy="100" r="3.5" fill="#ff3b3b" opacity="0">
+            <animate attributeName="opacity" values="0;1;0" dur="4s" begin="1s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="100" cy="200" r="3" fill="#ff3b3b" opacity="0">
+            <animate attributeName="opacity" values="0;1;0" dur="4s" begin="2.5s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="230" cy="190" r="2.5" fill="#ff3b3b" opacity="0">
+            <animate attributeName="opacity" values="0;1;0" dur="4s" begin="0.8s" repeatCount="indefinite"/>
+          </circle>
+          <!-- Ping ring on blip -->
+          <circle cx="210" cy="100" r="8" fill="none" stroke="#ff3b3b" stroke-width="0.8" opacity="0">
+            <animate attributeName="r" values="4;14" dur="1.5s" begin="1s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.8;0" dur="1.5s" begin="1s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+
+        <!-- Center dot -->
+        <circle cx="160" cy="160" r="4" fill="#00e5ff"/>
+        <circle cx="160" cy="160" r="8" fill="none" stroke="#00e5ff" stroke-width="0.8" opacity="0.4"/>
+
+        <!-- Labels -->
+        <text x="163" y="26" font-family="Share Tech Mono" font-size="9" fill="#00708a" letter-spacing="1">N</text>
+        <text x="163" y="299" font-family="Share Tech Mono" font-size="9" fill="#00708a" letter-spacing="1">S</text>
+        <text x="22"  y="164" font-family="Share Tech Mono" font-size="9" fill="#00708a" letter-spacing="1">W</text>
+        <text x="294" y="164" font-family="Share Tech Mono" font-size="9" fill="#00708a" letter-spacing="1">E</text>
+
+        <!-- Bottom status -->
+        <text x="160" y="315" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#00e5ff" letter-spacing="2">SCANNING...</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Ticker -->
+  <div class="ticker">
+    <span class="ticker-inner">
+      &nbsp;&nbsp;&nbsp;&nbsp;[SYS] PATROL ACTIVE &nbsp;·&nbsp; PIR ARMED &nbsp;·&nbsp; GSM CONNECTED &nbsp;·&nbsp; OBSTACLE AVOIDANCE: ON &nbsp;·&nbsp; IR VISION: ON &nbsp;·&nbsp; [SYS] PATROL ACTIVE &nbsp;·&nbsp; PIR ARMED &nbsp;·&nbsp; GSM CONNECTED &nbsp;·&nbsp; OBSTACLE AVOIDANCE: ON &nbsp;·&nbsp;
+    </span>
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- COMPONENTS -->
+<section id="components">
+  <div class="section-label">// Hardware</div>
+  <h2>System Components</h2>
+  <div class="components-grid">
+    <div class="comp-card">
+      <div class="comp-icon">⬡</div>
+      <div class="comp-name">Arduino Uno/Mega</div>
+      <div class="comp-desc">Main controller — runs sensors, motors, and GSM module.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-icon">👁</div>
+      <div class="comp-name">PIR Motion Sensor</div>
+      <div class="comp-desc">Detects infrared movement of humans in the patrol zone.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-icon">📡</div>
+      <div class="comp-name">HC-SR04 Ultrasonic</div>
+      <div class="comp-desc">Measures distance for real-time obstacle avoidance.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-icon">🌙</div>
+      <div class="comp-name">IR Night Vision Camera</div>
+      <div class="comp-desc">Captures video in complete darkness with infrared LEDs.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-icon">📱</div>
+      <div class="comp-name">SIM800L GSM Module</div>
+      <div class="comp-desc">Dispatches real-time SMS alerts to security personnel.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-icon">⚙️</div>
+      <div class="comp-name">L298N Motor Driver</div>
+      <div class="comp-desc">Drives dual DC motors for forward, reverse, and turning.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-label">// Operation</div>
+  <h2>How It Works</h2>
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-num">01</div>
+      <div class="flow-title">Patrol</div>
+      <div class="flow-desc">Robot moves autonomously in forward direction along designated perimeter.</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">02</div>
+      <div class="flow-title">Scan</div>
+      <div class="flow-desc">Ultrasonic sensor continuously measures distance to detect obstacles.</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">03</div>
+      <div class="flow-title">Avoid</div>
+      <div class="flow-desc">On detecting an obstacle &lt;20 cm, robot backs up and turns to reroute.</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">04</div>
+      <div class="flow-title">Detect</div>
+      <div class="flow-desc">PIR sensor triggers when unauthorized movement is sensed in the zone.</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">05</div>
+      <div class="flow-title">Alert</div>
+      <div class="flow-desc">GSM module fires an SMS to security personnel within seconds.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- CODE VIEWER -->
+<section id="code">
+  <div class="section-label">// Source Code</div>
+  <h2>Arduino Firmware</h2>
+  <div class="code-box">
+    <div class="code-header">
+      <span class="dot dot-r"></span>
+      <span class="dot dot-y"></span>
+      <span class="dot dot-g"></span>
+      <span class="code-filename">night_patrol_robot.ino</span>
+    </div>
+    <pre><span class="cm">/*  Night Patrolling Robot · Sept 2025
+    PIR + Ultrasonic + L298N Motors + SIM800L GSM  */</span>
+
+<span class="kw">#include</span> <span class="st">&lt;SoftwareSerial.h&gt;</span>
+<span class="fn">SoftwareSerial</span> gsm(<span class="nm">11</span>, <span class="nm">12</span>);
+
+<span class="kw">int</span> PIR=<span class="nm">2</span>, TRIG=<span class="nm">3</span>, ECHO=<span class="nm">4</span>;
+<span class="kw">int</span> IN1=<span class="nm">5</span>,IN2=<span class="nm">6</span>,IN3=<span class="nm">7</span>,IN4=<span class="nm">8</span>,ENA=<span class="nm">9</span>,ENB=<span class="nm">10</span>;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  Serial.<span class="fn">begin</span>(<span class="nm">9600</span>);
+  gsm.<span class="fn">begin</span>(<span class="nm">9600</span>);
+  <span class="fn">pinMode</span>(PIR, INPUT);
+  <span class="fn">pinMode</span>(TRIG, OUTPUT);
+  <span class="fn">pinMode</span>(ECHO, INPUT);
+  <span class="cm">// ... motor pins setup ...</span>
+  <span class="fn">delay</span>(<span class="nm">2000</span>);
+  gsm.<span class="fn">println</span>(<span class="st">"AT+CMGF=1"</span>); <span class="cm">// SMS text mode</span>
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">long</span> dist = <span class="fn">getDistance</span>();
+
+  <span class="kw">if</span> (dist &gt; <span class="nm">0</span> &amp;&amp; dist &lt; <span class="nm">20</span>) {
+    <span class="fn">stopCar</span>();
+    <span class="fn">moveBackward</span>(); <span class="fn">delay</span>(<span class="nm">300</span>);
+    <span class="fn">turnRight</span>();    <span class="fn">delay</span>(<span class="nm">300</span>);
+  } <span class="kw">else</span> {
+    <span class="fn">moveForward</span>();
+  }
+
+  <span class="kw">if</span> (<span class="fn">digitalRead</span>(PIR) == HIGH) {
+    <span class="fn">sendSMS</span>(<span class="st">"Alert! Motion detected by patrol robot."</span>);
+    <span class="fn">delay</span>(<span class="nm">5000</span>);
+  }
+}
+
+<span class="kw">long</span> <span class="fn">getDistance</span>() {
+  <span class="fn">digitalWrite</span>(TRIG, HIGH); <span class="fn">delayMicroseconds</span>(<span class="nm">10</span>);
+  <span class="fn">digitalWrite</span>(TRIG, LOW);
+  <span class="kw">long</span> d = <span class="fn">pulseIn</span>(ECHO, HIGH, <span class="nm">30000</span>);
+  <span class="kw">return</span> d * <span class="nm">0.034</span> / <span class="nm">2</span>;
+}
+
+<span class="kw">void</span> <span class="fn">sendSMS</span>(String msg) {
+  gsm.<span class="fn">println</span>(<span class="st">"AT+CMGS=\"+91XXXXXXXXXX\""</span>);
+  <span class="fn">delay</span>(<span class="nm">300</span>);
+  gsm.<span class="fn">println</span>(msg);
+  gsm.<span class="fn">write</span>(<span class="nm">26</span>); <span class="cm">// Ctrl+Z sends the SMS</span>
+}</pre>
+  </div>
+</section>
+
+
+<footer>
+  <span>NIGHT PATROLLING ROBOT</span> · Academic Project · Sept 2025 · Built with Arduino
+</footer>
+
+</body>
+</html>
